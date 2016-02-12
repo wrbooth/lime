@@ -133,6 +133,8 @@ static int _id_matrix;
 static int _id_ascent;
 static int _id_descent;
 
+static int _id_data;
+
 static Rect _tile_rect;
 
 vkind gObjectKind;
@@ -232,6 +234,8 @@ extern "C" void InitIDs()
 
    _id_ascent = val_id("ascent");
    _id_descent = val_id("descent");
+
+   _id_data = val_id("data");
 
    kind_share(&gObjectKind,"nme::Object");
    
@@ -1296,6 +1300,9 @@ void external_handler( nme::Event &ioEvent, void *inUserData )
    alloc_field(o,_id_scaleY,alloc_float(ioEvent.scaleY));
    alloc_field(o,_id_deltaX,alloc_float(ioEvent.deltaX));
    alloc_field(o,_id_deltaY,alloc_float(ioEvent.deltaY));
+   if (ioEvent.data != NULL) {
+       alloc_field(o,_id_data,alloc_string(ioEvent.data));
+   }
    val_call1(handler->get(), o);
    ioEvent.result = (EventResult)val_int( val_field(o,_id_result) );
 }
