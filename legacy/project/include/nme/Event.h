@@ -47,6 +47,10 @@ enum EventType
    
    etRenderContextLost, // 32
    etRenderContextRestored, // 33
+
+   etLaunchOptions, // 34
+   etRemoteNotification, // 35
+   etDeviceToken, // 36
 };
 
 enum EventFlags
