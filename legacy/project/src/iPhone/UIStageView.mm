@@ -2059,7 +2059,28 @@ bool nmeIsMain = true;
    [win addSubview:c.view];
    self.window.rootViewController = c;
    sOnFrame( new IOSViewFrame(c->nmeStage) );
+
+   NSLog(@"DIDFINISHLAUNCHING");
+   NSString* sLaunchOptions = [self dictToString: launchOptions];
+   NSLog(@"OPTS: %@", sLaunchOptions);
+   nme_send_launch_options([sLaunchOptions UTF8String]);
+
    return YES;
+}
+
+- (NSString*) dictToString: (NSDictionary*) dict
+{
+     NSError *error;
+     NSData *jsonData = [NSJSONSerialization dataWithJSONObject: dict
+                                                        options: 0
+                                                          error: &error];
+
+     if (!jsonData) {
+        NSLog(@"dictToString error: %@", error.localizedDescription);
+        return @"{}";
+     } else {
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+     } 
 }
 
 - (void) applicationWillResignActive:(UIApplication *)application
@@ -2222,6 +2243,12 @@ extern "C"
 
 void nme_app_set_active(bool inActive)
 {
+   NSLog(@"SETACTIVE WTF");
+   NSLog(@"SETACTIVE WTF");
+   NSLog(@"SETACTIVE WTF");
+   NSLog(@"SETACTIVE WTF");
+   NSLog(@"SETACTIVE WTF");
+   NSLog(@"SETACTIVE WTF");
    if (sgNmeStage)
    {
       Event evt(inActive ? etActivate : etDeactivate);
@@ -2233,7 +2260,6 @@ void nme_app_set_active(bool inActive)
    else
       nme::StopAnimation();
 }
-
 
 }
 
@@ -2270,6 +2296,9 @@ using namespace nme;
 
 void EnableKeyboard(bool inEnable);
 extern "C" void nme_app_set_active(bool inActive);
+extern "C" void nme_send_launch_options(const char * inOptions);
+extern "C" void nme_send_remote_notification(const char * inOptions);
+extern "C" void nme_send_device_token(const char * inOptions);
 
 namespace nme { int gFixedOrientation = -1; }
 
@@ -3645,7 +3674,7 @@ public:
 
 namespace nme {}
 
-- (void) applicationDidFinishLaunching:(UIApplication *)application
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
    UIWindow *win = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
    window = win;
@@ -3657,6 +3686,44 @@ namespace nme {}
    nme_app_set_active(true);
    application.idleTimerDisabled = YES;
    sOnFrame( new UIViewFrame() );
+
+   NSString* sLaunchOptions = [self dictToString: launchOptions];
+   nme_send_launch_options([sLaunchOptions UTF8String]);
+
+   return YES;
+}
+
+-(void) application:(UIApplication*)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
+   NSString* sUserInfo = [self dictToString: userInfo];
+   NSLog(@"USERINFO: %@", sUserInfo);
+   nme_send_remote_notification([sUserInfo UTF8String]);
+}
+
+- (void)application:(UIApplication *)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    if (deviceToken != nil) {
+        NSString *token = [[NSString alloc] initWithData:deviceToken encoding:NSUTF8StringEncoding];
+        nme_send_device_token([token UTF8String]);
+    }
+
+}
+
+- (NSString*) dictToString: (NSDictionary*) dict
+{
+     if (!dict || dict == nil || ![NSJSONSerialization isValidJSONObject: dict]) {
+        return @"{}";
+     }
+
+     NSError *error;
+     NSData *jsonData = [NSJSONSerialization dataWithJSONObject: dict
+                                                        options: 0
+                                                          error: &error];
+
+     if (!jsonData) {
+        NSLog(@"dictToString error: %@", error.localizedDescription);
+        return @"{}";
+     } else {
+        return [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+     } 
 }
 
 - (void) mainLoop {
@@ -3961,6 +4028,12 @@ extern "C"
 
 void nme_app_set_active(bool inActive)
 {
+   NSLog(@"SETACTIVE UNDERSTOOD");
+   NSLog(@"SETACTIVE UNDERSTOOD");
+   NSLog(@"SETACTIVE UNDERSTOOD");
+   NSLog(@"SETACTIVE UNDERSTOOD");
+   NSLog(@"SETACTIVE UNDERSTOOD");
+   NSLog(@"SETACTIVE UNDERSTOOD");
    if (IPhoneGetStage())
    {
       Event evt(inActive ? etActivate : etDeactivate);
@@ -3973,6 +4046,38 @@ void nme_app_set_active(bool inActive)
       nme::StopAnimation();
 }
 
+void nme_send_launch_options(const char * inOptions)
+{
+   if (IPhoneGetStage())
+   {
+      Event evt(etLaunchOptions);
+      evt.data = inOptions;
+      printf("EVENT DATA: %s\n", evt.data);
+      IPhoneGetStage()->HandleEvent(evt);
+   }
+}
+
+void nme_send_remote_notification(const char * inOptions)
+{
+   if (IPhoneGetStage())
+   {
+      Event evt(etRemoteNotification);
+      evt.data = inOptions;
+      printf("RN EVENT DATA: %s\n", evt.data);
+      IPhoneGetStage()->HandleEvent(evt);
+   }
+}
+
+void nme_send_device_token(const char * inOptions)
+{
+   if (IPhoneGetStage())
+   {
+      Event evt(etDeviceToken);
+      evt.data = inOptions;
+      printf("DT EVENT DATA: %s\n", evt.data);
+      IPhoneGetStage()->HandleEvent(evt);
+   }
+}
 
 }
 
