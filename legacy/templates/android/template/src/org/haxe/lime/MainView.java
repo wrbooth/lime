@@ -352,6 +352,12 @@ class MainView extends GLSurfaceView {
 	
 	@Override public boolean onKeyDown (final int inKeyCode, KeyEvent event) {
 		
+        if (inKeyCode == 4) {
+            throw new RuntimeException("back button not allowed... Sorry!!");
+            //mActivity.finish();
+            //return true;
+        }
+
 		final MainView me = this;
 		
 		::if (ANDROID_TARGET_SDK_VERSION > 11)::if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1 && (event.isGamepadButton (inKeyCode) || (inKeyCode >= 19 && inKeyCode <=22))) {
